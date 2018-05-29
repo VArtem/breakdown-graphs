@@ -1,5 +1,16 @@
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.DefaultDrawingSupplier;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.statistics.HistogramDataset;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.*;
 
 public class Histogram {
@@ -7,9 +18,9 @@ public class Histogram {
     private static final int COMPRESS_COEF = 1;//10;
     private HistogramDataset dataset;
     private XYBarRenderer renderer;
-    private Map<Integer, Integer> freq;
+    private Map<Integer, Double> freq;
 
-    public Histogram(Map<Integer, Integer> freq) {
+    public Histogram(Map<Integer, Double> freq) {
         this.freq = freq;
     }
 

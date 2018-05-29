@@ -32,5 +32,11 @@ public class Simulation {
             }
         }
         System.err.println(Arrays.toString(distribution));
+        Map<Integer, Double> freq = new HashMap<>();
+        for (int i = 1; i <= n; i++) {
+            freq.put(i, distribution[i]);
+        }
+        Histogram h = new Histogram(freq);
+        h.launch();
     }
 }
