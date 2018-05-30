@@ -19,8 +19,9 @@ public class Simulation2Graphs {
 
     private static void runSimulation() {
         double[] distribution = new double[n + 1];
+        BreakdownGraph graph = new BreakdownGraph(n);
         for (int ITERS = 1; ITERS <= MAX_ITERS; ITERS++) {
-            BreakdownGraph graph = new BreakdownGraph(n);
+            graph.reset();
             Random rng=  new Random(ITERS);
             for (int i = 0; i < k1; i++) {
                 graph.doRandomDCJ(rng);
