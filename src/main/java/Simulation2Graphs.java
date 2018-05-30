@@ -1,6 +1,8 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
-public class Simulation {
+public class Simulation2Graphs {
 
     public static final int k1 = 200;
     public static final int k2 = 200;
@@ -36,7 +38,18 @@ public class Simulation {
         for (int i = 1; i <= n; i++) {
             freq.put(i, distribution[i]);
         }
+        printData(distribution, "graph.txt");
         Histogram h = new Histogram(freq);
         h.launch();
+    }
+
+    public static void printData(double[] freq, String outFile) {
+        try (PrintWriter out = new PrintWriter(outFile)) {
+            for (int i = 1; i < freq.length; i++) {
+                out.println(i + " " + freq[i]);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }

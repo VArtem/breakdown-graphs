@@ -32,8 +32,8 @@ public class Histogram {
             r[(i - shift) / COMPRESS_COEF] += (double) freq.get(i) / COMPRESS_COEF;
         }
         dataset.addSeries("Frequency", r, 256);
-        JFreeChart chart = ChartFactory.createHistogram("Частотность метаболитов в реакциях",
-                "Количество реакций", "Количество метаболитов",
+        JFreeChart chart = ChartFactory.createHistogram("Title",
+                "X", "Y",
                 dataset, PlotOrientation.VERTICAL, true, true, false);
         chart.setBackgroundPaint(new Color(0xffffffff, true));
         XYPlot plot = (XYPlot) chart.getPlot();
