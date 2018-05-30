@@ -2,7 +2,7 @@ import java.util.*;
 
 public class BreakdownGraph {
 
-    public final static int MAX_HASH_ITERS = 10;
+    public final static int MAX_HASH_ITERS = 20;
     public final static int HASH_BASE = 1_000_003;
     public final static int COMP_HASH_BASE = 424243;
 
@@ -30,23 +30,23 @@ public class BreakdownGraph {
             graph[e.from].add(e);
             graph[e.to].add(e);
         }
-        long[] hash = new long[n];
-        long[] newHash = new long[n];
-        Arrays.fill(hash, 1);
+        long[] vertexHash = new long[n];
+        long[] tmpHash = new long[n];
+        Arrays.fill(vertexHash, 1);
         for (int IT = 0; IT < MAX_HASH_ITERS; IT++) {
             for (int i = 0; i < n; i++) {
                 List<Item> next = new ArrayList<>();
                 for (Edge e : graph[i]) {
                     int to = e.to + e.from - i;
-                    next.add(new Item(to, e.color, hash[to]));
+                    next.add(new Item(to, e.color, vertexHash[to]));
                 }
                 Collections.sort(next);
-                newHash[i] = 1;
+                tmpHash[i] = 1;
                 for (Item item : next) {
-                    newHash[i] = newHash[i] * HASH_BASE + item.hash;
+                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.hash;
                 }
             }
-            System.arraycopy(newHash, 0, hash, 0, n);
+            System.arraycopy(tmpHash, 0, vertexHash, 0, n);
         }
         int[] q = new int[n];
         boolean[] used = new boolean[n];
@@ -61,21 +61,25 @@ public class BreakdownGraph {
                     for (Edge e : graph[cur]) {
                         int to = e.to + e.from - cur;
                         if (!used[to]) {
-                            curComp.add(e);
                             used[to] = true;
                             q[tail++] = to;
                         }
                     }
                 }
 
-                List<Item> curItems = new ArrayList<>();
+                List<Long> curHashes = new ArrayList<>();
                 for (int i = 0; i < tail; i++) {
-                    curItems.add(new Item(q[i], -1, hash[q[i]]));
+                    curHashes.add(vertexHash[q[i]]);
+                    for (Edge e : graph[i]) {
+                        if (e.from == i) {
+                            curComp.add(e);
+                        }
+                    }
                 }
-                Collections.sort(curItems);
+                Collections.sort(curHashes);
                 long compHash = 0;
-                for (Item item : curItems) {
-                    compHash = compHash * COMP_HASH_BASE + item.hash;
+                for (long hash : curHashes) {
+                    compHash = compHash * COMP_HASH_BASE + hash;
                 }
                 if (!count.containsKey(compHash)) {
                     count.put(compHash, 1);
@@ -110,7 +114,7 @@ public class BreakdownGraph {
     class Edge {
         @Override
         public String toString() {
-            return String.format("%d -> %d")
+            return String.format("%d -[%d]> %d", from, color, to);
         }
 
         int from, to;
