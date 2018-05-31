@@ -9,11 +9,19 @@ public class BreakdownGraph {
     int n;
     List<Edge> edges;
 
+    public BreakdownGraph(int genes) {
+        this.n = 2 * genes;
+        this.edges = new ArrayList<>();
+        for (int i = 0; i < n; i += 2) {
+            edges.add(new Edge(i, i + 1));
+        }
+    }
+
     public BreakdownGraph(BreakdownGraph a, BreakdownGraph b) {
         this.n = a.n;
         this.edges = new ArrayList<>();
-        for (int i = 0; i < n; i += 2) {
-            edges.add(new Edge(i, i + 1, 0));
+        for (int i = 0; i < n / 2; i++) {
+            edges.add(new Edge(2 * i, 2 * i + 1, 0));
         }
         for (Edge e : a.edges) {
             edges.add(new Edge(e.from, e.to, 1));
@@ -30,24 +38,7 @@ public class BreakdownGraph {
             graph[e.from].add(e);
             graph[e.to].add(e);
         }
-        long[] vertexHash = new long[n];
-        long[] tmpHash = new long[n];
-        Arrays.fill(vertexHash, 1);
-        for (int IT = 0; IT < MAX_HASH_ITERS; IT++) {
-            for (int i = 0; i < n; i++) {
-                List<Item> next = new ArrayList<>();
-                for (Edge e : graph[i]) {
-                    int to = e.to + e.from - i;
-                    next.add(new Item(to, e.color, vertexHash[to]));
-                }
-                Collections.sort(next);
-                tmpHash[i] = 1;
-                for (Item item : next) {
-                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.hash;
-                }
-            }
-            System.arraycopy(tmpHash, 0, vertexHash, 0, n);
-        }
+        long[] vertexHash = getVertexHashes(graph);
         int[] q = new int[n];
         boolean[] used = new boolean[n];
         for (int start = 0; start < n; start++) {
@@ -66,12 +57,11 @@ public class BreakdownGraph {
                         }
                     }
                 }
-
                 List<Long> curHashes = new ArrayList<>();
-                for (int i = 0; i < tail; i++) {
-                    curHashes.add(vertexHash[q[i]]);
-                    for (Edge e : graph[i]) {
-                        if (e.from == i) {
+                for (int v : Arrays.copyOf(q, tail)) {
+                    curHashes.add(vertexHash[v]);
+                    for (Edge e : graph[v]) {
+                        if (e.from == v) {
                             curComp.add(e);
                         }
                     }
@@ -89,6 +79,29 @@ public class BreakdownGraph {
                 }
             }
         }
+    }
+
+    private long[] getVertexHashes(List<Edge>[] graph) {
+        long[] vertexHash = new long[n];
+        long[] tmpHash = new long[n];
+        Arrays.fill(vertexHash, 1);
+        for (int IT = 0; IT < MAX_HASH_ITERS; IT++) {
+            for (int i = 0; i < n; i++) {
+                List<Item> next = new ArrayList<>();
+                for (Edge e : graph[i]) {
+                    int to = e.to + e.from - i;
+                    next.add(new Item(to, e.color, vertexHash[to]));
+                }
+                Collections.sort(next);
+                tmpHash[i] = 1;
+                for (Item item : next) {
+                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.hash;
+                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.color;
+                }
+            }
+            System.arraycopy(tmpHash, 0, vertexHash, 0, n);
+        }
+        return vertexHash;
     }
 
     class Item implements Comparable<Item> {
@@ -111,7 +124,7 @@ public class BreakdownGraph {
         }
     }
 
-    class Edge {
+    public class Edge {
         @Override
         public String toString() {
             return String.format("%d -[%d]> %d", from, color, to);
@@ -128,14 +141,6 @@ public class BreakdownGraph {
 
         public Edge(int from, int to) {
             this(from, to, 0);
-        }
-    }
-
-    public BreakdownGraph(int genes) {
-        this.n = 2 * genes;
-        this.edges = new ArrayList<>();
-        for (int i = 0; i < n; i += 2) {
-            edges.add(new Edge(i, i + 1));
         }
     }
 

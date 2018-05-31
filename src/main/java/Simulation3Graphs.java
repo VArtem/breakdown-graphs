@@ -1,7 +1,7 @@
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
-
 
 public class Simulation3Graphs {
 
@@ -10,7 +10,7 @@ public class Simulation3Graphs {
     public static final int k3 = 200;
 
     public static final int n = 1000;
-    public static final int MAX_ITERS = 5_000;
+    public static final int MAX_ITERS = 1_000;
     public static final int MAX_COMPONENTS = 100;
 
     public static void main(String[] args) {
@@ -42,8 +42,8 @@ public class Simulation3Graphs {
             BreakdownGraph union = new BreakdownGraph(copy1, copy2);
             union.addToMaps(components, count);
             if (ITERS % 100 == 0) {
-                System.err.println("ITERS = " + ITERS);
-                System.err.println("Count size: " + count.size());
+                System.err.print("ITERS = " + ITERS);
+                System.err.println(", Different components: " + count.size());
             }
         }
 
@@ -57,18 +57,34 @@ public class Simulation3Graphs {
         for (int i = 0; i < list.size(); i++) {
             freq[i] = 1.0 * count.get(list.get(i).getKey()) / MAX_ITERS;
             result.put(i, freq[i]);
-//            printGraphDot(list.get(i).getValue(), String.format("graphs/%02d.dot", i));
+            printGraphDot(list.get(i).getValue(), String.format("data/graphs/%02d.dot", i));
             System.err.printf("%02d: edges = %d, freq = %.10f\n", i, list.get(i).getValue().size(), freq[i]);
         }
-        printData(freq, "graph3.txt");
+        printData(freq, "data/graph3.txt");
 
     }
 
-    private static void printGraphDot(List<BreakdownGraph.Edge> value, String outFile) {
+    private static void printGraphDot(List<BreakdownGraph.Edge> edges, String outFile) {
+        final String[] colors = new String[] {"black", "red", "blue"};
         try (PrintWriter out = new PrintWriter(outFile)) {
             out.println("graph {");
+            for (BreakdownGraph.Edge e : edges) {
+                out.printf("%d -- %d [color = %s];\n", e.from, e.to, colors[e.color]);
+            }
             out.println("}");
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return;
+        }
+        if (edges.size() > 100) {
+            return;
+        }
+        try {
+            String command = "circo -Tsvg -O" + outFile + ".svg " + outFile;
+            System.err.println(command);
+            Process runtime = Runtime.getRuntime().exec(command);
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
