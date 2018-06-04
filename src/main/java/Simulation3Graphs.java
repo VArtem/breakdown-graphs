@@ -10,7 +10,7 @@ public class Simulation3Graphs {
     public static final int k3 = 200;
 
     public static final int n = 1000;
-    public static final int MAX_ITERS = 1_000;
+    public static final int MAX_ITERS = 10_000;
     public static final int MAX_COMPONENTS = 100;
 
     public static void main(String[] args) {
@@ -48,7 +48,7 @@ public class Simulation3Graphs {
         }
 
         List<Map.Entry<Long, List<BreakdownGraph.Edge>>> list = new ArrayList<>(components.entrySet());
-        Collections.sort(list, Comparator.comparing(entry -> -count.get(entry.getKey())));
+        list.sort(Comparator.comparing(entry -> -count.get(entry.getKey())));
         list = list.subList(0, Math.min(list.size(), MAX_COMPONENTS));
 
         System.err.println("Top " + MAX_COMPONENTS + " components");
@@ -69,7 +69,13 @@ public class Simulation3Graphs {
         try (PrintWriter out = new PrintWriter(outFile)) {
             out.println("graph {");
             for (BreakdownGraph.Edge e : edges) {
-                out.printf("%d -- %d [color = %s];\n", e.from, e.to, colors[e.color]);
+                out.printf("%d -- %d [color = %s", e.from, e.to, colors[e.color]);
+                if (e.color == 0) {
+                    out.print(", weight = 100.0, penwidth = 4");
+                } else {
+                    out.print(", weight = 0");
+                }
+                out.println("];");
             }
             out.println("}");
         } catch (FileNotFoundException e) {

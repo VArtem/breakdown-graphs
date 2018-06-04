@@ -2,7 +2,7 @@ import java.util.*;
 
 public class BreakdownGraph {
 
-    public final static int MAX_HASH_ITERS = 20;
+    public final static int MAX_HASH_ITERS = 10;
     public final static int HASH_BASE = 1_000_003;
     public final static int COMP_HASH_BASE = 424243;
 
@@ -24,10 +24,12 @@ public class BreakdownGraph {
             edges.add(new Edge(2 * i, 2 * i + 1, 0));
         }
         for (Edge e : a.edges) {
-            edges.add(new Edge(e.from, e.to, 1));
+            edges.add(e);
+            e.color = 1;
         }
         for (Edge e : b.edges) {
-            edges.add(new Edge(e.from, e.to, 2));
+            edges.add(e);
+            e.color = 2;
         }
     }
 
@@ -71,9 +73,9 @@ public class BreakdownGraph {
                 for (long hash : curHashes) {
                     compHash = compHash * COMP_HASH_BASE + hash;
                 }
+                components.put(compHash, curComp);
                 if (!count.containsKey(compHash)) {
                     count.put(compHash, 1);
-                    components.put(compHash, curComp);
                 } else {
                     count.put(compHash, count.get(compHash) + 1);
                 }
@@ -95,8 +97,7 @@ public class BreakdownGraph {
                 Collections.sort(next);
                 tmpHash[i] = 1;
                 for (Item item : next) {
-                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.hash;
-                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.color;
+                    tmpHash[i] = tmpHash[i] + item.hash * HASH_BASE + item.color;
                 }
             }
             System.arraycopy(tmpHash, 0, vertexHash, 0, n);
