@@ -73,6 +73,7 @@ public class BreakdownGraph {
                 for (long hash : curHashes) {
                     compHash = compHash * COMP_HASH_BASE + hash;
                 }
+                compHash = curComp.size();
                 components.put(compHash, curComp);
                 if (!count.containsKey(compHash)) {
                     count.put(compHash, 1);
@@ -97,7 +98,8 @@ public class BreakdownGraph {
                 Collections.sort(next);
                 tmpHash[i] = 1;
                 for (Item item : next) {
-                    tmpHash[i] = tmpHash[i] + item.hash * HASH_BASE + item.color;
+                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.hash;
+                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.color;
                 }
             }
             System.arraycopy(tmpHash, 0, vertexHash, 0, n);
