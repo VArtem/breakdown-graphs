@@ -2,10 +2,6 @@ import java.util.*;
 
 public class BreakdownGraph {
 
-    public final static int MAX_HASH_ITERS = 10;
-    public final static int HASH_BASE = 1_000_003;
-    public final static int COMP_HASH_BASE = 424243;
-
     int n;
     List<Edge> edges;
 
@@ -33,14 +29,13 @@ public class BreakdownGraph {
         }
     }
 
-    public void addToMaps(Map<Long, List<Edge>> components, Map<Long, Integer> count) {
+    public void addToSummary(ComponentStatistics statistics) {
         List<Edge>[] graph = new List[n];
         Arrays.setAll(graph, ArrayList::new);
         for (Edge e : edges) {
             graph[e.from].add(e);
             graph[e.to].add(e);
         }
-        long[] vertexHash = getVertexHashes(graph);
         int[] q = new int[n];
         boolean[] used = new boolean[n];
         for (int start = 0; start < n; start++) {
@@ -59,91 +54,15 @@ public class BreakdownGraph {
                         }
                     }
                 }
-                List<Long> curHashes = new ArrayList<>();
-                for (int v : Arrays.copyOf(q, tail)) {
-                    curHashes.add(vertexHash[v]);
-                    for (Edge e : graph[v]) {
-                        if (e.from == v) {
+                for (int i = 0; i < tail; i++) {
+                    for (Edge e : graph[q[i]]) {
+                        if (e.from < e.to) {
                             curComp.add(e);
                         }
                     }
                 }
-                Collections.sort(curHashes);
-                long compHash = 0;
-                for (long hash : curHashes) {
-                    compHash = compHash * COMP_HASH_BASE + hash;
-                }
-                compHash = curComp.size();
-                components.put(compHash, curComp);
-                if (!count.containsKey(compHash)) {
-                    count.put(compHash, 1);
-                } else {
-                    count.put(compHash, count.get(compHash) + 1);
-                }
+                statistics.addComponent(new ConnectedComponent(curComp));
             }
-        }
-    }
-
-    private long[] getVertexHashes(List<Edge>[] graph) {
-        long[] vertexHash = new long[n];
-        long[] tmpHash = new long[n];
-        Arrays.fill(vertexHash, 1);
-        for (int IT = 0; IT < MAX_HASH_ITERS; IT++) {
-            for (int i = 0; i < n; i++) {
-                List<Item> next = new ArrayList<>();
-                for (Edge e : graph[i]) {
-                    int to = e.to + e.from - i;
-                    next.add(new Item(to, e.color, vertexHash[to]));
-                }
-                Collections.sort(next);
-                tmpHash[i] = 1;
-                for (Item item : next) {
-                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.hash;
-                    tmpHash[i] = tmpHash[i] * HASH_BASE + item.color;
-                }
-            }
-            System.arraycopy(tmpHash, 0, vertexHash, 0, n);
-        }
-        return vertexHash;
-    }
-
-    class Item implements Comparable<Item> {
-        int id, color;
-        long hash;
-
-        public Item(int id, int color, long hash) {
-            this.id = id;
-            this.color = color;
-            this.hash = hash;
-        }
-
-
-        @Override
-        public int compareTo(Item o2) {
-            if (this.color != o2.color) {
-                return this.color - o2.color;
-            }
-            return Long.compare(this.hash, o2.hash);
-        }
-    }
-
-    public class Edge {
-        @Override
-        public String toString() {
-            return String.format("%d -[%d]> %d", from, color, to);
-        }
-
-        int from, to;
-        int color;
-
-        public Edge(int from, int to, int color) {
-            this.from = from;
-            this.to = to;
-            this.color = color;
-        }
-
-        public Edge(int from, int to) {
-            this(from, to, 0);
         }
     }
 
