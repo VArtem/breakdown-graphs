@@ -56,7 +56,7 @@ public class BreakdownGraph {
                 }
                 for (int i = 0; i < tail; i++) {
                     for (Edge e : graph[q[i]]) {
-                        if (e.from < e.to) {
+                        if (e.from == q[i]) {
                             curComp.add(e);
                         }
                     }

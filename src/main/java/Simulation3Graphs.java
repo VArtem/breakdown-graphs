@@ -8,7 +8,7 @@ public class Simulation3Graphs {
     public static final int k3 = 150;
 
     public static final int n = 1000;
-    public static final int MAX_ITERS = 5_000;
+    public static final int MAX_ITERS = 300;
     public static final int MAX_COMPONENTS = 100;
 
     public static final String RUN_FOLDER = "data/runs";
@@ -53,8 +53,8 @@ public class Simulation3Graphs {
     }
 
     private static void printResults(ComponentStatistics stats) {
-        final String outputDataFolder = String.format("%s/%s/", RUN_FOLDER, new java.text.SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()));
-        new File(outputDataFolder + "graphs/").mkdirs();
+        final String outputDataFolder = String.format("%s/%s", RUN_FOLDER, new java.text.SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()));
+        new File(outputDataFolder + "/graphs").mkdirs();
 
         List<Map.Entry<ConnectedComponent, Integer>> list = new ArrayList<>(stats.count.entrySet());
         list.sort(Comparator.comparing(entry -> -entry.getValue()));
@@ -70,6 +70,6 @@ public class Simulation3Graphs {
             Utils.printGraphDot(entry.getKey(), String.format("%s/graphs/%02d.dot", outputDataFolder, i));
             System.err.printf("%02d: edges = %d, freq = %.10f\n", i, entry.getKey().edges.size(), freq[i]);
         }
-        Utils.printFrequencyData(freq, outputDataFolder + "summary.txt");
+        Utils.printFrequencyData(freq, outputDataFolder + "/summary.txt");
     }
 }

@@ -40,8 +40,8 @@ public class Simulation2Graphs {
             freq.put(i, distribution[i]);
         }
         printData(distribution, "graph.txt");
-        Histogram h = new Histogram(freq);
-        h.launch();
+//        Histogram h = new Histogram(freq);
+//        h.launch();
     }
 
     public static void printData(double[] freq, String outFile) {

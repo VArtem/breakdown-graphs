@@ -9,7 +9,7 @@ public class Utils {
         final String[] colors = new String[]{"black", "red", "blue"};
         try (PrintWriter out = new PrintWriter(outFile)) {
             out.println("graph {");
-            for (Edge e : component.edges) {
+            for (Edge e : component.originalEdges) {
                 out.printf("%d -- %d [color = %s", e.from, e.to, colors[e.color]);
                 if (e.color == 0) {
                     out.print(", weight = 100.0, penwidth = 4");
