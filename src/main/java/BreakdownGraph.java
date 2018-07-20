@@ -61,6 +61,9 @@ public class BreakdownGraph {
                         }
                     }
                 }
+                if (curComp.size() > ConnectedComponent.BRUTE_FORCE_THRESHOLD) {
+                    continue;
+                }
                 statistics.addComponent(new ConnectedComponent(curComp));
             }
         }

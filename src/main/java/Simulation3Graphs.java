@@ -8,8 +8,8 @@ public class Simulation3Graphs {
     public static final int k3 = 150;
 
     public static final int n = 1000;
-    public static final int MAX_ITERS = 300;
-    public static final int MAX_COMPONENTS = 100;
+    public static final int MAX_ITERS = 10000;
+    public static final int MAX_COMPONENTS = 300;
 
     public static final String RUN_FOLDER = "data/runs";
 
@@ -56,10 +56,7 @@ public class Simulation3Graphs {
         final String outputDataFolder = String.format("%s/%s", RUN_FOLDER, new java.text.SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()));
         new File(outputDataFolder + "/graphs").mkdirs();
 
-        List<Map.Entry<ConnectedComponent, Integer>> list = new ArrayList<>(stats.count.entrySet());
-        list.sort(Comparator.comparing(entry -> -entry.getValue()));
-        list = list.subList(0, Math.min(list.size(), MAX_COMPONENTS));
-
+        List<Map.Entry<ConnectedComponent, Integer>> list = getTopComponents(stats);
         System.err.println("Showing top " + MAX_COMPONENTS + " components");
         double[] freq = new double[list.size()];
         Map<Integer, Double> result = new HashMap<>();
@@ -71,5 +68,12 @@ public class Simulation3Graphs {
             System.err.printf("%02d: edges = %d, freq = %.10f\n", i, entry.getKey().edges.size(), freq[i]);
         }
         Utils.printFrequencyData(freq, outputDataFolder + "/summary.txt");
+    }
+
+    private static List<Map.Entry<ConnectedComponent, Integer>> getTopComponents(ComponentStatistics stats) {
+        List<Map.Entry<ConnectedComponent, Integer>> list = new ArrayList<>(stats.count.entrySet());
+        list.sort(Comparator.comparing(Map.Entry::getValue, Comparator.reverseOrder()));
+        list = list.subList(0, Math.min(list.size(), MAX_COMPONENTS));
+        return list;
     }
 }

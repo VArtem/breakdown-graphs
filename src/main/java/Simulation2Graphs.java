@@ -4,9 +4,9 @@ import java.util.*;
 
 public class Simulation2Graphs {
 
-    public static final int k1 = 200;
-    public static final int k2 = 200;
-    public static final int k3 = 200;
+    public static final int k1 = 150;
+    public static final int k2 = 150;
+    public static final int k3 = 150;
 
     public static final int n = 1000;
     public static final int MAX_ITERS = 100_000;
@@ -40,8 +40,6 @@ public class Simulation2Graphs {
             freq.put(i, distribution[i]);
         }
         printData(distribution, "graph.txt");
-//        Histogram h = new Histogram(freq);
-//        h.launch();
     }
 
     public static void printData(double[] freq, String outFile) {
