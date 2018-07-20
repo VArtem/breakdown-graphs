@@ -6,6 +6,7 @@ public class Simulation3Graphs {
     public static final int k1 = 150;
     public static final int k2 = 150;
     public static final int k3 = 150;
+    public static final int[] ks = {k1, k2, k3};
 
     public static final int n = 1000;
     public static final int MAX_ITERS = 10000;
@@ -28,22 +29,16 @@ public class Simulation3Graphs {
     private static void runIterations(ComponentStatistics statistics) {
         BreakdownGraph graph = new BreakdownGraph(n);
         for (int ITERS = 1; ITERS <= MAX_ITERS; ITERS++) {
-            graph.reset();
+            BreakdownGraph union = BreakdownGraph.createEmptyGraph(n);
             Random rng = new Random(ITERS);
-            for (int i = 0; i < k1; i++) {
-                graph.doRandomDCJ(rng);
-            }
-            BreakdownGraph copy1 = graph.clone();
-            BreakdownGraph copy2 = graph.clone();
-
-            for (int i = 0; i < k2; i++) {
-                copy1.doRandomDCJ(rng);
-            }
-            for (int i = 0; i < k3; i++) {
-                copy2.doRandomDCJ(rng);
+            for (int branch = 0; branch < ks.length; branch++) {
+                for (int i = 0; i < ks[branch]; i++) {
+                    graph.doRandomDCJ(rng);
+                }
+                union.addAllEdges(graph, branch);
+                graph.reset();
             }
 
-            BreakdownGraph union = new BreakdownGraph(copy1, copy2);
             union.addToSummary(statistics);
             if (ITERS % 100 == 0) {
                 System.err.print("ITERS = " + ITERS);
@@ -53,6 +48,7 @@ public class Simulation3Graphs {
     }
 
     private static void printResults(ComponentStatistics stats) {
+        System.err.println("Bad collisions: " + ConnectedComponent.BAD_HASHES_COUNT);
         final String outputDataFolder = String.format("%s/%s", RUN_FOLDER, new java.text.SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()));
         new File(outputDataFolder + "/graphs").mkdirs();
 

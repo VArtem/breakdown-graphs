@@ -29,6 +29,12 @@ public class BreakdownGraph {
         }
     }
 
+    public static BreakdownGraph createEmptyGraph(int n) {
+        BreakdownGraph g = new BreakdownGraph(n);
+        g.edges.clear();
+        return g;
+    }
+
     public void addToSummary(ComponentStatistics statistics) {
         List<Edge>[] graph = new List[n];
         Arrays.setAll(graph, ArrayList::new);
@@ -128,4 +134,9 @@ public class BreakdownGraph {
         }
     }
 
+    public void addAllEdges(BreakdownGraph graph, int color) {
+        for (Edge e : graph.edges) {
+            this.edges.add(new Edge(e.from, e.to, color));
+        }
+    }
 }

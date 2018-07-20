@@ -3,11 +3,16 @@ import java.util.*;
 public class ConnectedComponent {
 
     public static int BRUTE_FORCE_THRESHOLD = 100;
-    public static boolean IGNORE_COLORS = false;
+    public static boolean EQUATE_COLORS = true;
 
     private static final int[][] ALL_PERMUTATIONS = new int[][]{{0, 1, 2}, {0, 2, 1}, {1, 0, 2}, {1, 2, 0}, {2, 0, 1}, {2, 1, 0}};
+    private static final int[][] ONLY_ID = new int[][]{{0, 1, 2}};
+
     private static final int[] ID = ALL_PERMUTATIONS[0];
     private static final int FLOYD_ITERATIONS = 2;
+    private static final int HASH_PRIME = (1 << 20) * 100 + 1;
+
+    public static int BAD_HASHES_COUNT = 0;
 
     List<Edge>[] graph;
     List<Edge> edges, originalEdges;
@@ -53,7 +58,10 @@ public class ConnectedComponent {
                 a[i][i] = 0;
             }
             for (Edge e : edges) {
-                long add = ((long) vertexHashes[e.from] * vertexHashes[e.to]) & ((1 << 30) - 1) * (100 + (IGNORE_COLORS ? 0 : e.color));
+                a[e.from][e.to] = a[e.to][e.from] = 0;
+            }
+            for (Edge e : edges) {
+                long add = (long) vertexHashes[e.from] * vertexHashes[e.to] % HASH_PRIME * (100 + (EQUATE_COLORS ? 0 : e.color));
                 a[e.from][e.to] += add;
                 a[e.to][e.from] += add;
             }
@@ -69,7 +77,9 @@ public class ConnectedComponent {
                 vertexHashes[i] = Arrays.hashCode(a[i]);
             }
         }
-        this.hash = Arrays.hashCode(vertexHashes);
+        int[] hashesCopy = vertexHashes.clone();
+        Arrays.sort(hashesCopy);
+        this.hash = Arrays.hashCode(hashesCopy);
     }
 
     @Override
@@ -105,32 +115,19 @@ public class ConnectedComponent {
         int n = first.graph.length;
         int[] matching = new int[n];
         int[][] firstMatrix = first.buildMatrix();
-        for (int[] colorsPermutation : new int[][]{ID}) {
-            int[][] secondMatrix = second.buildMatrix(colorsPermutation);
+        int[][] secondMatrix = second.buildMatrix();
+        for (int[] colorsPermutation : EQUATE_COLORS ? ALL_PERMUTATIONS : ONLY_ID) {
+            second.buildMatrix(colorsPermutation, secondMatrix);
             if (!Arrays.equals(getCnt(firstMatrix), getCnt(secondMatrix))) {
                 continue;
             }
-            if (!match(first, second, colorsPermutation)) {
-                continue;
-            }
             Arrays.fill(matching, -1);
-            if (go(0, n, matching, first, firstMatrix, secondMatrix)) {
+            if (go(0, n, matching, first, second, firstMatrix, secondMatrix)) {
                 return true;
             }
-            break;
         }
+        BAD_HASHES_COUNT++;
         return false;
-    }
-
-    private static boolean match(ConnectedComponent first, ConnectedComponent second, int[] perm) {
-        for (int mask = 1; mask < 8; mask++) {
-            int hashDist1 = bfs(first, ID, mask);
-            int hashDist2 = bfs(second, perm, mask);
-            if (hashDist1 != hashDist2) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static int bfs(ConnectedComponent comp, int[] perm, int mask) {
@@ -184,12 +181,26 @@ public class ConnectedComponent {
         return a;
     }
 
-    private static boolean go(int depth, int n, int[] matching, ConnectedComponent first, int[][] a, int[][] b) {
+    private void buildMatrix(int[] perm, int[][] result) {
+        for (int i =0 ; i < result.length; i++) {
+            Arrays.fill(result[i], 0);
+        }
+        for (Edge e : edges) {
+            result[e.from][e.to] |= 1 << perm[e.color];
+            result[e.to][e.from] |= 1 << perm[e.color];
+        }
+    }
+
+
+    private static boolean go(int depth, int n, int[] matching, ConnectedComponent first, ConnectedComponent second, int[][] a, int[][] b) {
         if (depth == n) {
             return true;
         }
         int curVertex = findMaxVertex(matching, first);
         for (int i = 0; i < n; i++) {
+            if (first.vertexHashes[curVertex] != second.vertexHashes[i]) {
+                continue;
+            }
             boolean ok = true;
             for (int j = 0; j < n; j++) {
                 if (matching[j] == i) {
@@ -208,7 +219,7 @@ public class ConnectedComponent {
                 }
                 if (ok) {
                     matching[curVertex] = i;
-                    if (go(depth + 1, n, matching, first, a, b)) {
+                    if (go(depth + 1, n, matching, first, second, a, b)) {
                         return true;
                     }
                     matching[curVertex] = -1;
